@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
 <style>
 * {
     margin: 0;
@@ -36,14 +37,19 @@
     --font-body: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 }
+html, body {
+    height: 100%;
+}
 body {
     font-family: var(--font-body);
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: 28px;
     position: relative;
     overflow-x: hidden;
+}
+body.dark-mode {
+    background: #060709;
 }
 body::before,
 body::after {
@@ -55,50 +61,40 @@ body::after {
     max-height: 720px;
     border-radius: 50%;
     filter: blur(120px);
-    opacity: 0.16;
+    opacity: 0.15;
     z-index: -1;
     pointer-events: none;
     animation: driftBlob 26s ease-in-out infinite alternate;
 }
-body::before {
-    background: var(--violet);
-    top: -20%;
-    left: -12%;
-}
-body::after {
-    background: var(--cyan);
-    bottom: -22%;
-    right: -10%;
-    animation-delay: -12s;
-    animation-duration: 32s;
-}
+body::before { background: var(--violet); top: -20%; left: -12%; }
+body::after { background: var(--cyan); bottom: -22%; right: -10%; animation-delay: -12s; animation-duration: 32s; }
 @keyframes driftBlob {
     0%   { transform: translate(0, 0) scale(1); }
     100% { transform: translate(6%, 4%) scale(1.12); }
 }
-body.dark-mode {
-    background: #060709;
-}
-body.dark-mode::before,
-body.dark-mode::after {
-    opacity: 0.11;
-}
 @media (prefers-reduced-motion: reduce) {
     body::before, body::after { animation: none; }
 }
-.container {
+::selection { background: var(--violet); color: #0a0b10; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--violet); }
+
+.page {
     max-width: 1400px;
     margin: 0 auto;
-    position: relative;
+    padding: 20px 28px 60px;
 }
+
 header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 16px;
-    padding: 16px 22px;
-    margin-bottom: 28px;
+    padding: 14px 22px;
+    margin-bottom: 30px;
     background: rgba(20, 22, 31, 0.6);
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
@@ -106,15 +102,11 @@ header {
     border-radius: var(--radius-lg);
     position: sticky;
     top: 16px;
-    z-index: 50;
+    z-index: 200;
     box-shadow: 0 12px 40px rgba(0,0,0,0.35);
 }
-header > div:first-child {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-header > div:first-child::before {
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand::before {
     content: "";
     width: 34px;
     height: 34px;
@@ -123,10 +115,10 @@ header > div:first-child::before {
     box-shadow: 0 0 18px rgba(139, 125, 255, 0.5);
     flex-shrink: 0;
 }
-header h1 {
+.brand h1 {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     letter-spacing: 1px;
     background: var(--grad);
     -webkit-background-clip: text;
@@ -134,14 +126,23 @@ header h1 {
     color: transparent;
     line-height: 1.1;
 }
-.controls {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
+.brand .subtitle {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-faint);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 2px;
 }
-.controls input,
-.controls select {
+
+.search-container {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
+    max-width: 420px;
+}
+.search-container input {
+    width: 100%;
     padding: 9px 16px;
     border-radius: 999px;
     border: 1px solid var(--line-strong);
@@ -152,23 +153,76 @@ header h1 {
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
-.controls input::placeholder {
-    color: var(--text-faint);
-}
-.controls input:focus,
-.controls select:focus {
+.search-container input::placeholder { color: var(--text-faint); }
+.search-container input:focus {
     border-color: var(--violet);
     box-shadow: 0 0 0 3px rgba(139, 125, 255, 0.18);
     background: var(--panel-hover);
 }
-.controls select {
-    cursor: pointer;
+.search-results {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    max-height: 420px;
+    overflow-y: auto;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    z-index: 250;
 }
-.nav-buttons {
+.search-results.active { display: block; }
+.search-results-header {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    padding: 12px 16px 6px;
+}
+.search-result-item {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background 0.15s ease;
 }
+.search-result-item:hover { background: var(--panel-hover); }
+.search-result-image {
+    width: 52px;
+    height: 38px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+    flex-shrink: 0;
+}
+.search-result-info { flex: 1; min-width: 0; }
+.search-result-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.search-result-category {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    margin-top: 2px;
+}
+.search-no-results {
+    text-align: center;
+    padding: 30px 16px;
+    color: var(--text-faint);
+}
+
+.nav-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
 .nav-buttons button,
 .settings-button {
     padding: 9px 18px;
@@ -180,6 +234,9 @@ header h1 {
     font-weight: 500;
     font-size: 0.82rem;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     transition: all 0.2s ease;
 }
 .nav-buttons button:hover,
@@ -189,94 +246,122 @@ header h1 {
     color: var(--text);
     transform: translateY(-1px);
 }
-.featured-section {
-    margin-bottom: 30px;
-}
-.featured-section summary {
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    font-weight: 600;
+
+.view { display: none; }
+.view.active { display: block; }
+
+.hero-random {
+    position: relative;
+    height: 260px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
     cursor: pointer;
-    padding: 10px 4px;
-    color: var(--text);
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    user-select: none;
+    margin-bottom: 40px;
+    border: 1px solid var(--line);
+    background: var(--panel);
 }
-.featured-section summary::-webkit-details-marker {
-    display: none;
+.hero-random img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 6s ease, opacity 0.4s ease;
 }
-.featured-section summary::before {
+.hero-random:hover img { transform: scale(1.05); }
+.hero-random::after {
     content: "";
-    width: 4px;
-    height: 18px;
-    border-radius: 4px;
-    background: var(--grad);
-    display: inline-block;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, rgba(6,7,10,0.9) 15%, rgba(6,7,10,0.35) 55%, rgba(6,7,10,0.1) 100%);
 }
-.featured-section summary::after {
-    content: "\2039";
-    margin-left: auto;
-    transform: rotate(-90deg);
-    color: var(--text-faint);
-    font-size: 1.1rem;
-    transition: transform 0.2s ease;
+.hero-overlay {
+    position: absolute;
+    left: 32px;
+    bottom: 28px;
+    z-index: 2;
 }
-.featured-section[open] summary::after {
-    transform: rotate(0deg);
-}
-.featured-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 18px;
-    margin-top: 14px;
-}
-.zone-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 18px;
-}
-.summary-text {
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 14px;
-    padding: 10px 4px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.summary-text::before {
-    content: "";
-    width: 4px;
-    height: 18px;
-    border-radius: 4px;
-    background: var(--grad);
-    display: inline-block;
-}
-.subtitle {
+.hero-eyebrow {
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    color: var(--text-faint);
+    font-size: 0.7rem;
     letter-spacing: 3px;
     text-transform: uppercase;
-    margin-top: 2px;
+    color: var(--cyan);
+    margin-bottom: 8px;
 }
-.zone-item {
+.hero-cta {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+}
+.hero-cta i { color: var(--violet); }
+
+.category-section { margin-bottom: 36px; }
+.category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 0 2px;
+}
+.category-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.category-title::before {
+    content: "";
+    width: 4px;
+    height: 18px;
+    border-radius: 4px;
+    background: var(--grad);
+    display: inline-block;
+}
+.category-title i { color: var(--violet); }
+.category-view-all {
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s ease;
+}
+.category-view-all:hover { color: var(--cyan); }
+
+.carousel {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 4px 2px 12px;
+    scroll-snap-type: x proximity;
+}
+.carousel::-webkit-scrollbar { height: 8px; }
+
+.game-card {
     position: relative;
-    background: var(--panel);
+    flex: 0 0 220px;
+    aspect-ratio: 16/10;
     border-radius: var(--radius-md);
     overflow: hidden;
     cursor: pointer;
     border: 1px solid var(--line);
+    background: var(--panel);
+    scroll-snap-align: start;
     transition: transform 0.25s cubic-bezier(.2,.8,.2,1), box-shadow 0.25s ease;
-    aspect-ratio: 16/9;
     isolation: isolate;
 }
-.zone-item::before {
+.game-card::before {
     content: "";
     position: absolute;
     inset: -2px;
@@ -292,56 +377,110 @@ header h1 {
     z-index: -1;
     pointer-events: none;
 }
-@keyframes spinHalo {
-    to { transform: rotate(360deg); }
-}
-.zone-item:hover {
+@keyframes spinHalo { to { transform: rotate(360deg); } }
+.game-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 16px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(139,125,255,0.15);
+    box-shadow: 0 16px 32px rgba(0,0,0,0.4);
 }
-.zone-item:hover::before {
-    opacity: 1;
-}
-.zone-item img {
+.game-card:hover::before { opacity: 1; }
+.game-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
     background: var(--panel-hover);
 }
-.zone-item button {
+.game-overlay {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
-    padding: 24px 12px 10px;
-    border: none;
-    background: linear-gradient(to top, rgba(6,7,10,0.92) 10%, rgba(6,7,10,0) 100%);
-    color: var(--text);
-    font-family: var(--font-body);
+    padding: 30px 12px 10px;
+    background: linear-gradient(to top, rgba(6,7,10,0.95) 20%, rgba(6,7,10,0) 100%);
+}
+.game-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     font-size: 0.85rem;
     font-weight: 600;
-    cursor: pointer;
-    text-align: left;
+    color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    letter-spacing: 0.1px;
 }
-.zone-item button:hover {
-    color: var(--cyan);
+.game-title .open-icon { color: var(--cyan); flex-shrink: 0; opacity: 0; transform: scale(0.7); transition: all 0.2s ease; }
+.game-card:hover .game-title .open-icon { opacity: 1; transform: scale(1); }
+.game-description {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease, opacity 0.25s ease, margin-top 0.25s ease;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
-.zone-viewer {
-    display: none;
+.game-card:hover .game-description {
+    max-height: 40px;
+    opacity: 1;
+    margin-top: 6px;
+}
+.game-creator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: var(--text-faint);
+    margin-top: 6px;
+}
+
+.grid-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+.back-link {
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    color: var(--text-dim);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+.back-link:hover { border-color: var(--violet); color: var(--text); }
+.grid-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+.zone-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 18px;
+}
+.zone-grid .game-card { flex: unset; aspect-ratio: 16/10; }
+
+#gamePlayerView.active {
+    display: block;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     z-index: 1000;
     background: var(--bg);
 }
-.zone-viewer-header {
+.player-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -353,37 +492,32 @@ header h1 {
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--line);
 }
-.zone-viewer-header .info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-.zone-viewer-header .info h2 {
+.player-info h2 {
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 1.05rem;
     color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
-.zone-viewer-header .info a {
-    color: var(--cyan);
-    text-decoration: none;
-    font-size: 0.82rem;
+.player-info h2 i { color: var(--violet); }
+.player-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 4px;
 }
-.zone-viewer-header .info a:hover {
-    text-decoration: underline;
-}
-.zone-viewer-header .info span {
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-faint);
 }
-.zone-viewer-header .actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-.zone-viewer-header .actions button {
+.player-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.player-actions button {
     padding: 7px 16px;
     border-radius: 999px;
     border: 1px solid var(--line-strong);
@@ -395,42 +529,42 @@ header h1 {
     color: var(--text-dim);
     transition: all 0.2s ease;
 }
-.zone-viewer-header .actions button:hover {
-    background: var(--panel-hover);
-    border-color: var(--violet);
-    color: var(--text);
-}
-.zone-viewer-header .actions button.primary-btn {
-    background: var(--grad);
-    border-color: transparent;
-    color: #0a0b10;
-    font-weight: 600;
-}
-.zone-viewer-header .actions button.primary-btn:hover {
-    filter: brightness(1.08);
-    color: #0a0b10;
-}
-.zone-viewer-header .actions button.close-btn {
-    border-color: rgba(255, 95, 160, 0.4);
-    color: var(--pink);
-}
-.zone-viewer-header .actions button.close-btn:hover {
-    background: rgba(255, 95, 160, 0.12);
-    border-color: var(--pink);
-    color: var(--pink);
-}
-#zoneFrame {
+.player-actions button:hover { background: var(--panel-hover); border-color: var(--violet); color: var(--text); }
+.player-actions button.close-btn { border-color: rgba(255, 95, 160, 0.4); color: var(--pink); }
+.player-actions button.close-btn:hover { background: rgba(255, 95, 160, 0.12); border-color: var(--pink); color: var(--pink); }
+
+.game-frame-container {
+    position: relative;
     width: 100%;
-    height: calc(100% - 58px);
-    border: none;
+    height: calc(100% - 76px);
 }
+.game-frame { width: 100%; height: 100%; border: none; display: block; }
+.loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+}
+.spinner {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid var(--line-strong);
+    border-top-color: var(--violet);
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .popup-overlay {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     z-index: 2000;
     background: rgba(6, 7, 10, 0.75);
     backdrop-filter: blur(4px);
@@ -475,17 +609,9 @@ header h1 {
     line-height: 1;
     transition: color 0.2s ease;
 }
-.popup-close:hover {
-    color: var(--pink);
-}
-.popup-body {
-    line-height: 1.65;
-    color: var(--text-dim);
-    font-size: 0.92rem;
-}
-.popup-body b {
-    color: var(--text);
-}
+.popup-close:hover { color: var(--pink); }
+.popup-body { line-height: 1.65; color: var(--text-dim); font-size: 0.92rem; }
+.popup-body b { color: var(--text); }
 .popup-body input[type="text"] {
     width: 100%;
     padding: 9px 14px;
@@ -496,15 +622,9 @@ header h1 {
     outline: none;
     font-family: var(--font-body);
 }
-.popup-body input[type="text"]:focus {
-    border-color: var(--violet);
-}
-.popup-body a {
-    color: var(--cyan);
-}
-.dmca-content ol {
-    padding-left: 20px;
-}
+.popup-body input[type="text"]:focus { border-color: var(--violet); }
+.popup-body a { color: var(--cyan); }
+.dmca-content ol { padding-left: 20px; }
 .dmca-content code {
     background: var(--bg-2);
     padding: 2px 6px;
@@ -512,107 +632,77 @@ header h1 {
     font-family: var(--font-mono);
     color: var(--amber);
 }
-.settings-button {
-    display: block;
-    width: 100%;
-    text-align: left;
-}
-::selection {
-    background: var(--violet);
-    color: #0a0b10;
-}
-::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: var(--line-strong);
-    border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: var(--violet);
-}
-@media (max-width: 600px) {
-    body { padding: 14px; }
-    .zone-grid,
-    .featured-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 12px;
-    }
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-        position: static;
-        padding: 16px;
-    }
-    .controls {
-        width: 100%;
-    }
-    .controls input {
-        flex: 1;
-    }
+.settings-button { display: block; width: 100%; text-align: left; }
+
+@media (max-width: 700px) {
+    .page { padding: 14px 14px 40px; }
+    header { flex-direction: column; align-items: stretch; position: static; padding: 16px; }
+    .search-container { max-width: none; }
+    .hero-random { height: 190px; }
+    .hero-overlay { left: 18px; bottom: 18px; }
+    .hero-cta { font-size: 1.2rem; }
+    .game-card { flex-basis: 160px; }
 }
 </style>
 </head>
 <body>
-<div class="container" id="mainContainer">
+<div class="page">
 <header>
-    <div>
+    <div class="brand">
         <div>
             <h1>The Vault</h1>
             <p class="subtitle">Unlocked Games</p>
         </div>
     </div>
-    <div class="controls">
-        <input type="text" id="searchBar" placeholder="Search the vault..." oninput="filterZones()">
-        <select id="sortOptions" onchange="sortZones()">
-            <option value="popular">Most Popular</option>
-            <option value="trendingMonth">Trending Month</option>
-            <option value="trendingWeek">Trending Week</option>
-            <option value="trendingDay">Trending Day</option>
-            <option value="name">Name A-Z</option>
-            <option value="id">Newest</option>
-        </select>
-        <select id="filterOptions" onchange="filterZones2()">
-            <option value="none">All Tags</option>
-        </select>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search the vault..." oninput="handleSearch(this.value)">
+        <div class="search-results" id="searchResults"></div>
     </div>
     <div class="nav-buttons">
-        <button id="settings">Settings</button>
-        <button onclick="showContact()">Contact</button>
-        <button onclick="loadPrivacy()">Privacy</button>
-        <button onclick="loadDMCA()">DMCA</button>
+        <button id="backHomeBtn" style="display:none" onclick="showGamesView()"><i data-lucide="arrow-left" width="15" height="15"></i>Back</button>
+        <button onclick="showAllGamesGrid()"><i data-lucide="layout-grid" width="15" height="15"></i>All Games</button>
+        <button id="settings"><i data-lucide="settings-2" width="15" height="15"></i>Settings</button>
+        <button onclick="showContact()"><i data-lucide="mail" width="15" height="15"></i>Contact</button>
+        <button onclick="loadPrivacy()"><i data-lucide="shield" width="15" height="15"></i>Privacy</button>
+        <button onclick="loadDMCA()"><i data-lucide="gavel" width="15" height="15"></i>DMCA</button>
     </div>
 </header>
 
-<details class="featured-section" id="featuredZonesWrapper" open>
-    <summary id="allZonesSummary">Featured Zones</summary>
-    <div class="featured-grid" id="featuredZones"></div>
-</details>
-
-<p class="summary-text" id="allSummary">All Zones</p>
-<div class="zone-grid" id="container"></div>
+<div id="gamesView" class="view active">
+    <div class="hero-random" id="randomGameHero" onclick="openRandomGame()">
+        <img id="randomGamePreview" alt="Random game preview">
+        <div class="hero-overlay">
+            <p class="hero-eyebrow">Feeling lucky?</p>
+            <p class="hero-cta"><i data-lucide="shuffle" width="24" height="24"></i>Play a random game</p>
+        </div>
+    </div>
+    <div id="categories"></div>
 </div>
 
-<div class="zone-viewer" id="zoneViewer">
-<div class="zone-viewer-header">
-    <div class="info">
-        <h2 id="zoneName"></h2>
-        <a id="zoneAuthor" href="#" target="_blank"></a>
-        <span>ID: <span id="zoneId"></span></span>
+<div id="gridView" class="view">
+    <div class="grid-header">
+        <button class="back-link" onclick="showGamesView()"><i data-lucide="arrow-left" width="15" height="15"></i>Back</button>
+        <h2>Games</h2>
     </div>
-    <div class="actions">
-        <button onclick="showZoneInfo()">Info</button>
-        <button onclick="aboutBlank()">About:Blank</button>
-        <button class="primary-btn" onclick="downloadZone()">Download</button>
-        <button onclick="fullscreenZone()">Fullscreen</button>
-        <button class="close-btn" onclick="closeZone()">Close</button>
+    <div class="zone-grid" id="allGamesGrid"></div>
+</div>
+
+<div id="gamePlayerView" class="view">
+    <div class="player-header">
+        <div class="player-info">
+            <h2 id="gameTitle"></h2>
+            <div class="player-meta" id="gameMeta"></div>
+        </div>
+        <div class="player-actions">
+            <button onclick="openInNewTab()"><i data-lucide="external-link" width="14" height="14"></i></button>
+            <button onclick="toggleFullscreen()"><i data-lucide="maximize" width="14" height="14"></i></button>
+            <button class="close-btn" onclick="closeGame()"><i data-lucide="x" width="14" height="14"></i>Close</button>
+        </div>
+    </div>
+    <div class="game-frame-container" id="gameFrameContainer">
+        <div class="loading" id="loading"><div class="spinner"></div><p>Loading game...</p></div>
     </div>
 </div>
-<iframe id="zoneFrame" src="about:blank"></iframe>
 </div>
 
 <div class="popup-overlay" id="popupOverlay">
@@ -626,407 +716,155 @@ header h1 {
 <input type="file" id="loadDataInput" accept=".data" style="display:none" onchange="loadData(event)">
 
 <script>
-const container = document.getElementById('container');
-const zoneViewer = document.getElementById('zoneViewer');
-let zoneFrame = document.getElementById('zoneFrame');
-const searchBar = document.getElementById('searchBar');
-const sortOptions = document.getElementById('sortOptions');
-const filterOptions = document.getElementById('filterOptions');
-const zonesurls = [
-    "https://cdn.jsdelivr.net/gh/freebuisness/assets@main/zones.json",
-    "https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json",
-    "https://cdn.jsdelivr.net/gh/freebuisness/assets@master/zones.json",
-    "https://cdn.jsdelivr.net/gh/freebuisness/assets/zones.json"
-];
-let zonesURL = zonesurls[Math.floor(Math.random() * zonesurls.length)];
-const coverURL = "https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
-const htmlURL = "https://cdn.jsdelivr.net/gh/freebuisness/html@main";
-let zones = [];
-let popularityData = {};
-const featuredContainer = document.getElementById('featuredZones');
-function toTitleCase(str) {
-  return str.replace(
-    /\w\S*/g,
-    text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
-  );
-}
-async function listZones() {
-    try {
-      let sharesponse;
-      let shajson;
-      let sha;
-        try {
-          sharesponse = await fetch("https://api.github.com/repos/freebuisness/assets/commits?t="+Date.now());
-        } catch (error) {}
-        if (sharesponse && sharesponse.status === 200) {
-          try {
-            shajson = await sharesponse.json();
-            sha = shajson[0]['sha'];
-            if (sha) {
-                zonesURL = `https://cdn.jsdelivr.net/gh/freebuisness/assets@${sha}/zones.json`;
-            }
-          } catch (error) {
-            try {
-                let secondarysharesponse = await fetch("https://raw.githubusercontent.com/freebuisness/xml/refs/heads/main/sha.txt?t="+Date.now());
-                if (secondarysharesponse && secondarysharesponse.status === 200) {
-                    sha = (await secondarysharesponse.text()).trim();
-                    if (sha) {
-                        zonesURL = `https://cdn.jsdelivr.net/gh/freebuisness/assets@${sha}/zones.json`;
-                    }
-                }
-            } catch(error) {}
-          }
-        }
-        const response = await fetch(zonesURL+"?t="+Date.now());
-        const json = await response.json();
-        zones = json;
-        zones[0].featured = true;
-        await Promise.all([fetchPopularity("year"), fetchPopularity("month"), fetchPopularity("week"), fetchPopularity("day")]);
-        sortZones();
-        try {
-        const search = new URLSearchParams(window.location.search);
-        const id = search.get('id');
-        const embed = window.location.hash.includes("embed");
-        if (id) {
-            const zone = zones.find(zone => zone.id + '' == id + '');
-            if (zone) {
-                if (embed) {
-                    if (zone.url.startsWith("http")) {
-                        window.open(zone.url, "_blank");
-                    } else {
-                        const url = zone.url.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-                        fetch(url+"?t="+Date.now()).then(response => response.text()).then(html => {
-                            document.documentElement.innerHTML = html;
-                            const popup = document.createElement("div");
-                            popup.style.position = "fixed";
-                            popup.style.bottom = "20px";
-                            popup.style.right = "20px";
-                            popup.style.backgroundColor = "#cce5ff";
-                            popup.style.color = "#004085";
-                            popup.style.padding = "10px";
-                            popup.style.border = "1px solid #b8daff";
-                            popup.style.borderRadius = "5px";
-                            popup.style.boxShadow = "0px 0px 10px rgba(0,0,0,0.1)";
-                            popup.style.fontFamily = "Arial, sans-serif";
-                            
-                            popup.innerHTML = `Play more games at <a href="https://thevault.dev" target="_blank" style="color:#004085; font-weight:bold;">The Vault</a>!`;
-                            
-                            const closeBtn = document.createElement("button");
-                            closeBtn.innerText = "?";
-                            closeBtn.style.marginLeft = "10px";
-                            closeBtn.style.background = "none";
-                            closeBtn.style.border = "none";
-                            closeBtn.style.cursor = "pointer";
-                            closeBtn.style.color = "#004085";
-                            closeBtn.style.fontWeight = "bold";
-                            
-                            closeBtn.onclick = () => popup.remove();
-                            popup.appendChild(closeBtn);
-                            document.body.appendChild(popup);
-                            document.documentElement.querySelectorAll('script').forEach(oldScript => {
-                                const newScript = document.createElement('script');
-                                if (oldScript.src) {
-                                    newScript.src = oldScript.src;
-                                } else {
-                                    newScript.textContent = oldScript.textContent;
-                                }
-                                document.body.appendChild(newScript);
-                            });
-                        }).catch(error => alert("Failed to load zone: " + error));
-                    }
-                } else {
-                    openZone(zone);
-                }
-            }
-        }
-        } catch(error){}
-        let alltags = [];
-        for (const obj of json) {
-            if (Array.isArray(obj.special)) {
-                alltags.push(...obj.special);
-            }
-        }
-
-        alltags = [...new Set(alltags)];
-        let filteroption = document.getElementById("filterOptions");
-        if (filteroption && filteroption.children.length > 1) {
-            while (filteroption.children.length > 1) {
-                filteroption.removeChild(filteroption.lastElementChild);
-            }
-        }
-        for (const tag of alltags) {
-            const opt = document.createElement("option");
-            opt.value = tag;
-            opt.textContent = toTitleCase(tag);
-            filteroption.appendChild(opt);
-        }
-    } catch (error) {
-        console.error(error);
-        container.innerHTML = `Error loading zones: ${error}`;
-    }
-}
-async function fetchPopularity(duration) {
-    try {
-        if (!popularityData[duration]) {
-            popularityData[duration] = {};
-        }
-        const response = await fetch(
-            "https://data.jsdelivr.com/v1/stats/packages/gh/freebuisness/html@main/files?period=" + duration
-        );
-        const data = await response.json();
-        data.forEach(file => {
-            const idMatch = file.name.match(/\/(\d+)\.html$/);
-            if (idMatch) {
-                const id = parseInt(idMatch[1]);
-                popularityData[duration][id] = file.hits?.total ?? 0;
-            }
-        });
-    } catch (error) {
-        if (!popularityData[duration]) {
-            popularityData[duration] = {};
-        }
-        popularityData[duration][0] = 0;
-    }
+function darkMode() {
+    document.body.classList.toggle("dark-mode");
 }
 
-
-function sortZones() {
-    const sortBy = sortOptions.value;
-    if (sortBy === 'name') {
-        zones.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortBy === 'id') {
-        zones.sort((a, b) => a.id - b.id);
-    } else if (sortBy === 'popular') {
-        zones.sort((a, b) => ((popularityData['year']?.[b.id]) ?? 0) - ((popularityData['year']?.[a.id]) ?? 0));
-    } else if (sortBy === 'trendingMonth') {
-        zones.sort((a, b) => ((popularityData['month']?.[b.id]) ?? 0) - ((popularityData['month']?.[a.id]) ?? 0));
-    } else if (sortBy === 'trendingWeek') {
-        zones.sort((a, b) => ((popularityData['week']?.[b.id]) ?? 0) - ((popularityData['week']?.[a.id]) ?? 0));
-    } else if (sortBy === 'trendingDay') {
-        zones.sort((a, b) => ((popularityData['day']?.[b.id]) ?? 0) - ((popularityData['day']?.[a.id]) ?? 0));
-    }
-    zones.sort((a, b) => (a.id === -1 ? -1 : b.id === -1 ? 1 : 0));
-    if (featuredContainer.innerHTML === "") {
-        const featured = zones.filter(z => z.featured);
-        displayFeaturedZones(featured);
-    }
-    displayZones(zones);
-}
-
-function displayFeaturedZones(featuredZones) {
-    featuredContainer.innerHTML = "";
-    featuredZones.forEach((file, index) => {
-        const zoneItem = document.createElement("div");
-        zoneItem.className = "zone-item";
-        zoneItem.onclick = () => openZone(file);
-        const img = document.createElement("img");
-        img.dataset.src = file.cover.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-        img.alt = file.name;
-        img.loading = "lazy";
-        img.className = "lazy-zone-img";
-        zoneItem.appendChild(img);
-        const button = document.createElement("button");
-        button.textContent = file.name;
-        button.onclick = (event) => {
-            event.stopPropagation();
-            openZone(file);
-        };
-        zoneItem.appendChild(button);
-        featuredContainer.appendChild(zoneItem);
-    });
-    if (featuredContainer.innerHTML === "") {
-        featuredContainer.innerHTML = "No featured zones found.";
+function cloakIcon(url) {
+    const link = document.querySelector("link[rel~='icon']");
+    link.rel = "icon";
+    if ((url+"").trim().length === 0) {
+        link.href = "favicon.png";
     } else {
-        document.getElementById("allZonesSummary").textContent = `Featured Zones (${featuredZones.length})`;
+        link.href = url;
     }
-
-    const lazyImages = document.querySelectorAll('#featuredZones img.lazy-zone-img');
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !zoneViewer.hidden) {
-                const img = entry.target;
-                img.src = img.dataset.src;
-                img.classList.remove("lazy-zone-img");
-                observer.unobserve(img);
-            }
-        });
-    }, {
-        rootMargin: "100px", 
-        threshold: 0.1
-    });
-
-    lazyImages.forEach(img => {
-        imageObserver.observe(img);
-    });
+    document.head.appendChild(link);
 }
-function displayZones(zones) {
-    container.innerHTML = "";
-    zones.forEach((file, index) => {
-        const zoneItem = document.createElement("div");
-        zoneItem.className = "zone-item";
-        zoneItem.onclick = () => openZone(file);
-        const img = document.createElement("img");
-        img.dataset.src = file.cover.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-        img.alt = file.name;
-        img.loading = "lazy";
-        img.className = "lazy-zone-img";
-        zoneItem.appendChild(img);
-        const button = document.createElement("button");
-        button.textContent = file.name;
-        button.onclick = (event) => {
-            event.stopPropagation();
-            openZone(file);
-        };
-        zoneItem.appendChild(button);
-        container.appendChild(zoneItem);   
-    });
-    if (container.innerHTML === "") {
-        container.innerHTML = "No zones found.";
-    } else {
-        document.getElementById("allSummary").textContent = `All Zones (${zones.length})`;
+function cloakName(string) {
+    if ((string+"").trim().length === 0) {
+        document.title = "The Vault";
+        return;
     }
-
-    const lazyImages = document.querySelectorAll('img.lazy-zone-img');
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !zoneViewer.hidden) {
-                const img = entry.target;
-                img.src = img.dataset.src;
-                img.classList.remove("lazy-zone-img");
-                observer.unobserve(img);
-            }
-        });
-    }, {
-        rootMargin: "100px", 
-        threshold: 0.1
-    });
-
-    lazyImages.forEach(img => {
-        imageObserver.observe(img);
-    });
+    document.title = string;
 }
 
-function filterZones2() {
-    const query = filterOptions.value;
-    if (query === "none") {
-        displayZones(zones);
-    } else {
-        const filteredZones = zones.filter(zone => zone.special?.includes(query));
-        if (query.length !== 0) {
-            document.getElementById("featuredZonesWrapper").removeAttribute("open");
-        }
-        displayZones(filteredZones);
-    }
+function tabCloak() {
+    closePopup();
+    document.getElementById('popupTitle').textContent = "Tab Cloak";
+    const popupBody = document.getElementById('popupBody');
+    popupBody.innerHTML = `
+        <label for="tab-cloak-textbox" style="font-weight: bold;">Set Tab Title:</label><br>
+        <input type="text" id="tab-cloak-textbox" placeholder="Enter new tab name..." oninput="cloakName(this.value)">
+        <br><br><br><br>
+        <label for="tab-cloak-textbox" style="font-weight: bold;">Set Tab Icon:</label><br>
+        <input type="text" id="tab-cloak-textbox" placeholder="Enter new tab icon..." oninput='cloakIcon(this.value)'>
+        <br><br><br>
+    `;
+    popupBody.contentEditable = false;
+    document.getElementById('popupOverlay').style.display = "flex";
 }
 
-function filterZones() {
-    const query = searchBar.value.toLowerCase();
-    const filteredZones = zones.filter(zone => zone.name.toLowerCase().includes(query));
-    if (query.length !== 0) {
-        document.getElementById("featuredZonesWrapper").removeAttribute("open");
-    }
-    displayZones(filteredZones);
+const settings = document.getElementById('settings');
+settings.addEventListener('click', () => {
+    document.getElementById('popupTitle').textContent = "Settings";
+    const popupBody = document.getElementById('popupBody');
+    popupBody.innerHTML = `
+    <button class="settings-button" onclick="darkMode()">Toggle Dark Mode</button>
+    <br><br>
+    <button class="settings-button" onclick="tabCloak()">Tab Cloak</button>
+    <br>
+    `;
+    popupBody.contentEditable = false;
+    document.getElementById('popupOverlay').style.display = "flex";
+});
+
+function showContact() {
+    document.getElementById('popupTitle').textContent = "Contact";
+    const popupBody = document.getElementById('popupBody');
+    popupBody.innerHTML = `
+    <p>Discord: https://discord.gg/NAFw4ykZ7n</p>
+    <p>Email: vault.games@gmail.com</p>`;
+    popupBody.contentEditable = false;
+    document.getElementById('popupOverlay').style.display = "flex";
 }
 
-function openZone(file) {
-    if (file.url.startsWith("http")) {
-        window.open(file.url, "_blank");
-    } else {
-        const url = file.url.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-        fetch(url+"?t="+Date.now()).then(response => response.text()).then(html => {
-            if (zoneFrame.contentDocument === null) {
-                zoneFrame = document.createElement("iframe");
-                zoneFrame.id = "zoneFrame";
-                zoneViewer.appendChild(zoneFrame);
-            }
-            zoneFrame.contentDocument.open();
-            zoneFrame.contentDocument.write(html);
-            zoneFrame.contentDocument.close();
-            document.getElementById('zoneName').textContent = file.name;
-            document.getElementById('zoneId').textContent = file.id;
-            document.getElementById('zoneAuthor').textContent = "by " + file.author;
-            if (file.authorLink) {
-                document.getElementById('zoneAuthor').href = file.authorLink;
-            }
-            zoneViewer.style.display = "block";
-            try {
-                const url = new URL(window.location);
-                url.searchParams.set('id', file.id);
-                history.pushState(null, '', url.toString());
-            } catch(error){}
-            zoneViewer.hidden = true;
-        }).catch(error => alert("Failed to load zone: " + error));
-    }
+function loadPrivacy() {
+    document.getElementById('popupTitle').textContent = "Privacy Policy";
+    const popupBody = document.getElementById('popupBody');
+    popupBody.innerHTML = `
+        <div style="max-height: 60vh; overflow-y: auto;">
+            <h2>PRIVACY POLICY</h2>
+            <p>Last updated Feburary 20, 2026</p>
+            <p>This Privacy Notice for The Vault ("we," "us," or "our"), describes how and why we might access, collect, store, use, and/or share ("process") your personal information when you use our services ("Services"), including when you:</p>
+            <ul>
+                <li>Visit our website at <a href="https://thevault.dev">https://thevault.dev</a>, or any website of ours that links to this Privacy Notice</li>
+                <li>Engage with us in other related ways, including any sales, marketing, or events</li>
+            </ul>
+            <p>Questions or concerns? Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us at <a href="https://discord.gg/NAFw4ykZ7n">https://discord.gg/NAFw4ykZ7n</a>.</p>
+
+            <h3>SUMMARY OF KEY POINTS</h3>
+            <p>This summary provides key points from our Privacy Notice, but you can find out more details about any of these topics by clicking the link following each key point or by using our table of contents below to find the section you are looking for.</p>
+
+            <p><strong>What personal information do we process?</strong> When you visit, use, or navigate our Services, we may process personal information depending on how you interact with us and the Services, the choices you make, and the products and features you use. Learn more about personal information you disclose to us.</p>
+
+            <p><strong>Do we process any sensitive personal information?</strong> Some of the information may be considered "special" or "sensitive" in certain jurisdictions, for example your racial or ethnic origins, sexual orientation, and religious beliefs. We do not process sensitive personal information.</p>
+
+            <p><strong>Do we collect any information from third parties?</strong> We do not collect any information from third parties.</p>
+
+            <p><strong>How do we process your information?</strong> We process your information to provide, improve, and administer our Services, communicate with you, for security and fraud prevention, and to comply with law. We may also process your information for other purposes with your consent. We process your information only when we have a valid legal reason to do so. Learn more about how we process your information.</p>
+
+            <p><strong>In what situations and with which parties do we share personal information?</strong> We may share information in specific situations and with specific third parties. Learn more about when and with whom we share your personal information.</p>
+
+            <p><strong>How do we keep your information safe?</strong> We have adequate organizational and technical processes and procedures in place to protect your personal information. However, no electronic transmission over the internet or information storage technology can be guaranteed to be 100% secure, so we cannot promise or guarantee that hackers, cybercriminals, or other unauthorized third parties will not be able to defeat our security and improperly collect, access, steal, or modify your information. Learn more about how we keep your information safe.</p>
+
+            <p><strong>What are your rights?</strong> Depending on where you are located geographically, the applicable privacy law may mean you have certain rights regarding your personal information. Learn more about your privacy rights.</p>
+
+            <p><strong>How do you exercise your rights?</strong> The easiest way to exercise your rights is by submitting a data subject access request, or by contacting us. We will consider and act upon any request in accordance with applicable data protection laws.</p>
+        </div>
+    `;
+    popupBody.contentEditable = false;
+    document.getElementById('popupOverlay').style.display = "flex";
 }
 
-function aboutBlank() {
-    const newWindow = window.open("about:blank", "_blank");
-    let zone = zones.find(zone => zone.id + '' === document.getElementById('zoneId').textContent).url.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-    fetch(zone+"?t="+Date.now()).then(response => response.text()).then(html => {
-        if (newWindow) {
-            newWindow.document.open();
-            newWindow.document.write(html);
-            newWindow.document.close();
-        }
-    })
+function loadDMCA() {
+    document.getElementById('popupTitle').textContent = "DMCA";
+    const popupBody = document.getElementById('popupBody');
+    popupBody.innerHTML = `
+        <div class="dmca-content">
+            <p>
+                If you own or developed a game that is on <strong>The Vault</strong>
+                and would like it removed, please do one of the following:
+            </p>
+            <ol>
+                <li>
+                    <a href="https://discord.gg/D4c9VFYWyU" target="_blank" rel="noopener noreferrer">
+                        Join the Discord
+                    </a> and DM <strong>breadbb</strong> or ping me in a public channel
+                    <strong>[INSTANT RESPONSE]</strong>
+                </li>
+                <li>
+                    Email me at
+                    <a href="mailto:vault.games@gmail.com">vault.games@gmail.com</a>
+                    with the subject starting with <code>!DMCA</code>.
+                    <strong>[DELAYED RESPONSE]</strong>
+                </li>
+            </ol>
+            <p>
+                If you are going to do an email, please show proof you own the game before I have to ask.
+            </p>
+        </div>
+    `;
+    popupBody.contentEditable = false;
+    document.getElementById('popupOverlay').style.display = "flex";
 }
 
-function closeZone() {
-    zoneViewer.hidden = false;
-    zoneViewer.style.display = "none";
-    zoneViewer.removeChild(zoneFrame);
-    try {
-    const url = new URL(window.location);
-    url.searchParams.delete('id');
-    history.pushState(null, '', url.toString());
-    } catch(error){}
-}
-
-function downloadZone() {
-    let zone = zones.find(zone => zone.id + '' === document.getElementById('zoneId').textContent);
-    fetch(zone.url.replace("{HTML_URL}", htmlURL)+"?t="+Date.now()).then(res => res.text()).then(text => {
-        const blob = new Blob([text], {
-            type: "text/plain;charset=utf-8"
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = zone.name + ".html";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    });
-}
-
-function fullscreenZone() {
-    if (zoneFrame.requestFullscreen) {
-        zoneFrame.requestFullscreen();
-    } else if (zoneFrame.mozRequestFullScreen) {
-        zoneFrame.mozRequestFullScreen();
-    } else if (zoneFrame.webkitRequestFullscreen) {
-        zoneFrame.webkitRequestFullscreen();
-    } else if (zoneFrame.msRequestFullscreen) {
-        zoneFrame.msRequestFullscreen();
-    }
+function closePopup() {
+    document.getElementById('popupOverlay').style.display = "none";
 }
 
 function sanitizeData(obj, maxStringLen = 1000, maxArrayLen = 10000) {
     if (typeof obj === 'string') {
       return obj.length > maxStringLen ? obj.slice(0, maxStringLen) + '...[truncated]' : obj;
     }
-    
     if (obj instanceof Uint8Array) {
       if (obj.length > maxArrayLen) {
         return `[Uint8Array too large (${obj.length} bytes), truncated]`;
       }
       return obj;
     }
-    
     if (Array.isArray(obj)) {
       return obj.map(item => sanitizeData(item, maxStringLen, maxArrayLen));
     }
-    
     if (obj && typeof obj === 'object') {
       const newObj = {};
       for (const key in obj) {
@@ -1036,9 +874,8 @@ function sanitizeData(obj, maxStringLen = 1000, maxArrayLen = 10000) {
       }
       return newObj;
     }
-    
     return obj;
-  }
+}
 
 async function saveData() {
     alert("This might take a while, dont touch anything other than this OK button");
@@ -1112,7 +949,7 @@ async function saveData() {
         });
       }
     }
-  
+
     alert("Done, wait for the download to come");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob([JSON.stringify(result)], {
@@ -1122,9 +959,9 @@ async function saveData() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
-  
-  async function loadData(event) {
+}
+
+async function loadData(event) {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -1134,21 +971,18 @@ async function saveData() {
             data.cookies.split(';').forEach(cookie => {
               document.cookie = cookie.trim();
             });
-          }
-        
-          if (data.localStorage) {
+        }
+        if (data.localStorage) {
             for (const key in data.localStorage) {
               localStorage.setItem(key, data.localStorage[key]);
             }
-          }
-        
-          if (data.sessionStorage) {
+        }
+        if (data.sessionStorage) {
             for (const key in data.sessionStorage) {
               sessionStorage.setItem(key, data.sessionStorage[key]);
             }
-          }
-        
-          if (data.indexedDB) {
+        }
+        if (data.indexedDB) {
             for (const dbName in data.indexedDB) {
               const stores = data.indexedDB[dbName];
               await new Promise((resolve, reject) => {
@@ -1166,7 +1000,6 @@ async function saveData() {
                   const transaction = db.transaction(Object.keys(stores), 'readwrite');
                   transaction.onerror = () => reject(transaction.error);
                   let pendingStores = Object.keys(stores).length;
-        
                   for (const storeName in stores) {
                     const objectStore = transaction.objectStore(storeName);
                     objectStore.clear().onsuccess = () => {
@@ -1181,13 +1014,11 @@ async function saveData() {
                 request.onerror = () => reject(request.error);
               });
             }
-          }
-        
-          if (data.caches) {
+        }
+        if (data.caches) {
             for (const cacheName in data.caches) {
               const cache = await caches.open(cacheName);
               await cache.keys().then(keys => Promise.all(keys.map(k => cache.delete(k))));
-        
               for (const entry of data.caches[cacheName]) {
                 let responseBody;
                 if (entry.contentType.includes('application/json')) {
@@ -1208,254 +1039,413 @@ async function saveData() {
                 await cache.put(entry.url, response);
               }
             }
-          }
+        }
         alert("Data loaded");
     };
     alert("This might take a while, dont touch anything other than this OK button");
     reader.readAsText(file);
-  }
-
-function darkMode() {
-    document.body.classList.toggle("dark-mode");
 }
-
-function cloakIcon(url) {
-    const link = document.querySelector("link[rel~='icon']");
-    link.rel = "icon";
-    if ((url+"").trim().length === 0) {
-        link.href = "favicon.png";
-    } else {
-        link.href = url;
-    }
-    document.head.appendChild(link);
-}
-function cloakName(string) {
-    if ((string+"").trim().length === 0) {
-        document.title = "The Vault";
-        return;
-    }
-    document.title = string;
-}
-
-function tabCloak() {
-    closePopup();
-    document.getElementById('popupTitle').textContent = "Tab Cloak";
-    const popupBody = document.getElementById('popupBody');
-    popupBody.innerHTML = `
-        <label for="tab-cloak-textbox" style="font-weight: bold;">Set Tab Title:</label><br>
-        <input type="text" id="tab-cloak-textbox" placeholder="Enter new tab name..." oninput="cloakName(this.value)">
-        <br><br><br><br>
-        <label for="tab-cloak-textbox" style="font-weight: bold;">Set Tab Icon:</label><br>
-        <input type="text" id="tab-cloak-textbox" placeholder="Enter new tab icon..." oninput='cloakIcon(this.value)'>
-        <br><br><br>
-    `;
-    popupBody.contentEditable = false;
-    document.getElementById('popupOverlay').style.display = "flex";
-}
-
-const settings = document.getElementById('settings');
-settings.addEventListener('click', () => {
-    document.getElementById('popupTitle').textContent = "Settings";
-    const popupBody = document.getElementById('popupBody');
-    popupBody.innerHTML = `
-    <button class="settings-button" onclick="darkMode()">Toggle Dark Mode</button>
-    <br><br>
-    <button class="settings-button" onclick="tabCloak()">Tab Cloak</button>
-    <br>
-    `;
-    popupBody.contentEditable = false;
-    document.getElementById('popupOverlay').style.display = "flex";
-});
-
-
-function showContact() {
-    document.getElementById('popupTitle').textContent = "Contact";
-    const popupBody = document.getElementById('popupBody');
-    popupBody.innerHTML = `
-    <p>Discord: https://discord.gg/NAFw4ykZ7n</p>
-    <p>Email: vault.games@gmail.com</p>`;
-    popupBody.contentEditable = false;
-    document.getElementById('popupOverlay').style.display = "flex";
-}
-
-function loadPrivacy() {
-    document.getElementById('popupTitle').textContent = "Privacy Policy";
-    const popupBody = document.getElementById('popupBody');
-    popupBody.innerHTML = `
-        <div style="max-height: 60vh; overflow-y: auto;">
-            <h2>PRIVACY POLICY</h2>
-            <p>Last updated Feburary 20, 2026</p>
-            <p>This Privacy Notice for The Vault ("we," "us," or "our"), describes how and why we might access, collect, store, use, and/or share ("process") your personal information when you use our services ("Services"), including when you:</p>
-            <ul>
-                <li>Visit our website at <a href="https://thevault.dev">https://thevault.dev</a>, or any website of ours that links to this Privacy Notice</li>
-                <li>Engage with us in other related ways, including any sales, marketing, or events</li>
-            </ul>
-            <p>Questions or concerns? Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us at <a href="https://discord.gg/NAFw4ykZ7n">https://discord.gg/NAFw4ykZ7n</a>.</p>
-            
-            <h3>SUMMARY OF KEY POINTS</h3>
-            <p>This summary provides key points from our Privacy Notice, but you can find out more details about any of these topics by clicking the link following each key point or by using our table of contents below to find the section you are looking for.</p>
-            
-            <p><strong>What personal information do we process?</strong> When you visit, use, or navigate our Services, we may process personal information depending on how you interact with us and the Services, the choices you make, and the products and features you use. Learn more about personal information you disclose to us.</p>
-            
-            <p><strong>Do we process any sensitive personal information?</strong> Some of the information may be considered "special" or "sensitive" in certain jurisdictions, for example your racial or ethnic origins, sexual orientation, and religious beliefs. We do not process sensitive personal information.</p>
-            
-            <p><strong>Do we collect any information from third parties?</strong> We do not collect any information from third parties.</p>
-            
-            <p><strong>How do we process your information?</strong> We process your information to provide, improve, and administer our Services, communicate with you, for security and fraud prevention, and to comply with law. We may also process your information for other purposes with your consent. We process your information only when we have a valid legal reason to do so. Learn more about how we process your information.</p>
-            
-            <p><strong>In what situations and with which parties do we share personal information?</strong> We may share information in specific situations and with specific third parties. Learn more about when and with whom we share your personal information.</p>
-            
-            <p><strong>How do we keep your information safe?</strong> We have adequate organizational and technical processes and procedures in place to protect your personal information. However, no electronic transmission over the internet or information storage technology can be guaranteed to be 100% secure, so we cannot promise or guarantee that hackers, cybercriminals, or other unauthorized third parties will not be able to defeat our security and improperly collect, access, steal, or modify your information. Learn more about how we keep your information safe.</p>
-            
-            <p><strong>What are your rights?</strong> Depending on where you are located geographically, the applicable privacy law may mean you have certain rights regarding your personal information. Learn more about your privacy rights.</p>
-            
-            <p><strong>How do you exercise your rights?</strong> The easiest way to exercise your rights is by submitting a data subject access request, or by contacting us. We will consider and act upon any request in accordance with applicable data protection laws.</p>
-        </div>
-    `;
-    popupBody.contentEditable = false;
-    document.getElementById('popupOverlay').style.display = "flex";
-}
-
-function loadDMCA() {
-    document.getElementById('popupTitle').textContent = "DMCA";
-    const popupBody = document.getElementById('popupBody');
-    popupBody.innerHTML = `
-        <div class="dmca-content">
-            <p>
-                If you own or developed a game that is on <strong>The Vault</strong> 
-                and would like it removed, please do one of the following:
-            </p>
-            <ol>
-                <li>
-                    <a href="https://discord.gg/D4c9VFYWyU" target="_blank" rel="noopener noreferrer">
-                        Join the Discord
-                    </a> and DM <strong>breadbb</strong> or ping me in a public channel 
-                    <strong>[INSTANT RESPONSE]</strong>
-                </li>
-                <li>
-                    Email me at 
-                    <a href="mailto:vault.games@gmail.com">vault.games@gmail.com</a> 
-                    with the subject starting with <code>!DMCA</code>.
-                    <strong>[DELAYED RESPONSE]</strong>
-                </li>
-            </ol>
-            <p>
-                If you are going to do an email, please show proof you own the game before I have to ask.
-            </p>
-        </div>
-    `;
-    popupBody.contentEditable = false;
-    document.getElementById('popupOverlay').style.display = "flex";
-}
-
-let _allStatsCache = null;
-
-async function getAllStats() {
-  if (_allStatsCache) {
-    return _allStatsCache;
-  }
-
-  const BASE_URL =
-    "https://data.jsdelivr.com/v1/stats/packages/gh/freebuisness/html@main/files";
-  const PERIOD = "year";
-  const PAGE_BATCH = 5;
-
-  let page = 1;
-  let done = false;
-  const combinedMap = Object.create(null);
-
-  while (!done) {
-    const pages = Array.from({ length: PAGE_BATCH }, (_, i) => page + i);
-
-    const responses = await Promise.all(
-      pages.map(p =>
-        fetch(`${BASE_URL}?period=${PERIOD}&page=${p}&limit=100`)
-          .then(r => (r.ok ? r.json() : []))
-      )
-    );
-
-    for (const data of responses) {
-      if (!Array.isArray(data) || data.length === 0) {
-        done = true;
-        break;
-      }
-
-      for (const item of data) {
-        if (!item?.name) continue;
-
-        const match = item.name.match(/^\/(\d+)([.-])/);
-        if (!match) continue;
-
-        const id = match[1];
-
-        if (!combinedMap[id]) {
-          combinedMap[id] = {
-            hits: 0,
-            bandwidth: 0
-          };
-        }
-
-        combinedMap[id].hits += item.hits?.total ?? 0;
-        combinedMap[id].bandwidth += item.bandwidth?.total ?? 0;
-      }
-    }
-
-    page += PAGE_BATCH;
-  }
-
-  _allStatsCache = combinedMap;
-  return combinedMap;
-}
-
-async function getStats(id) {
-  id = String(id);
-  const allStats = await getAllStats();
-
-  return allStats[id]?.hits ?? 0;
-}
-
-function showZoneInfo() {
-    let id = Number(document.getElementById('zoneId').textContent);
-    document.getElementById('popupTitle').textContent = "Info";
-    const popupBody = document.getElementById('popupBody');
-    popupBody.innerHTML = `<p>Loading...</p>`
-    popupBody.contentEditable = false;
-    document.getElementById('popupOverlay').style.display = "flex";
-    fetch(`https://api.github.com/repos/freebuisness/html/commits?path=${id}.html`).then(res => res.json()).then(async json => {
-        let stats = await getStats (id);
-        idjson = zones.filter(a=>a.id===id)[0]
-        document.getElementById('popupTitle').textContent = `${idjson.name} Info`;
-        const date = new Date(json.at(-1).commit.author.date);
-        let formatteddate = new Intl.DateTimeFormat("en-US", {
-  month: "long",
-  day: "numeric",
-  year: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  hour12: true
-}).format(date);
-        popupBody.innerHTML = `
-        <p>
-        <b>Id</b>: ${id}<br>
-        <b>Name</b>: ${idjson.name}<br>
-        ${idjson.author?`<b>Game Author</b>: ${idjson.author}<br>`:""}
-        ${idjson.authorLink?`<b>Game Author Link</b>: <a style="color:#FFFF00;" href=${idjson.authorLink}>${idjson.authorLink}</a><br>`:""}
-        ${idjson.special?`<b>Tags</b>: ${idjson.special}<br>`:""}
-        <b>Vault Adder</b>: ${json.at(-1).commit.author.name}<br>
-        <b>Date Added</b>: ${formatteddate}<br>
-        <b>Times Played (Globally)</b>: ${Number(stats).toLocaleString("en-US")}
-        </p>`;
-    })
-}
-
-function closePopup() {
-    document.getElementById('popupOverlay').style.display = "none";
-}
-listZones();
 
 HTMLCanvasElement.prototype.toDataURL = function (...args) {
     return "";
 };
+
+let allGames = [];
+let currentGame = null;
+let currentRandomGame = null;
+let randomGameInterval = null;
+const categories = ['Action', 'Adventure', 'Arcade', 'Racing', 'Sports', 'Puzzle', 'Strategy', 'Simulation', 'Platform', 'Music', 'Horror', 'Multiplayer', 'Other'];
+
+const categoryIcons = {
+    'Action': 'zap',
+    'Adventure': 'map',
+    'Arcade': 'joystick',
+    'Racing': 'car',
+    'Sports': 'trophy',
+    'Puzzle': 'puzzle',
+    'Strategy': 'brain',
+    'Simulation': 'settings',
+    'Platform': 'layers',
+    'Music': 'music',
+    'Horror': 'skull',
+    'Multiplayer': 'users',
+    'Other': 'gamepad-2'
+};
+
+fetch('https://cdn.jsdelivr.net/gh/rosinxsosa/rosin@HEAD/games.json')
+    .then(response => response.json())
+    .then(games => {
+        console.log('Loaded games from CDN:', games.length);
+        allGames = games;
+        initializeCarousel();
+        startRandomGameRotation();
+
+        const search = new URLSearchParams(window.location.search);
+        const id = search.get('id');
+        if (id) {
+            const game = allGames.find(game => game.id + '' == id + '');
+            if (game) {
+                openGame(game.id);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error loading games from CDN:', error);
+        document.getElementById('categories').innerHTML = `
+            <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
+                <i data-lucide="alert-circle" width="48" height="48"></i>
+                <h3 style="margin: 20px 0;">Unable to load games</h3>
+                <p>Please check your internet connection and try refreshing the page.</p>
+            </div>
+        `;
+        lucide.createIcons();
+    });
+
+function initializeCarousel() {
+    const categoriesContainer = document.getElementById('categories');
+    categoriesContainer.innerHTML = '';
+
+    categories.forEach(category => {
+        const categoryGames = allGames.filter(game => game.category === category);
+        if (categoryGames.length === 0) return;
+
+        const section = document.createElement('div');
+        section.className = 'category-section';
+        section.innerHTML = `
+            <div class="category-header">
+                <h2 class="category-title">
+                    <i data-lucide="${categoryIcons[category]}" width="20" height="20"></i>
+                    <span>${category}</span>
+                </h2>
+                <button class="category-view-all" onclick="showCategoryGrid('${category}')">
+                    <span>View All</span>
+                    <i data-lucide="arrow-right" width="14" height="14"></i>
+                </button>
+            </div>
+            <div class="carousel">
+                ${categoryGames.map(game => createGameCard(game)).join('')}
+            </div>
+        `;
+        categoriesContainer.appendChild(section);
+    });
+
+    lucide.createIcons();
+}
+
+function createGameCard(game) {
+    return `
+        <div class="game-card" onclick="openGame(${game.id})">
+            <img src="${game.image}" alt="${game.name}" class="game-image">
+            <div class="game-overlay">
+                <div class="game-title">
+                    <span>${game.name}</span>
+                    <i data-lucide="play-circle" width="18" height="18" class="open-icon"></i>
+                </div>
+                <div class="game-description">${game.description}</div>
+                <div class="game-creator">
+                    <i data-lucide="user" width="11" height="11"></i>
+                    <span>${game.creator}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function showAllGamesGrid() {
+    document.getElementById('gamesView').classList.remove('active');
+    document.getElementById('gridView').classList.add('active');
+
+    const gridContainer = document.getElementById('allGamesGrid');
+    gridContainer.innerHTML = allGames.map(game => createGameCard(game)).join('');
+    lucide.createIcons();
+}
+
+function showCategoryGrid(category) {
+    document.getElementById('gamesView').classList.remove('active');
+    document.getElementById('gridView').classList.add('active');
+
+    const categoryGames = allGames.filter(game => game.category === category);
+    const gridContainer = document.getElementById('allGamesGrid');
+    gridContainer.innerHTML = categoryGames.map(game => createGameCard(game)).join('');
+    lucide.createIcons();
+}
+
+function showGamesView() {
+    document.getElementById('gridView').classList.remove('active');
+    document.getElementById('gamePlayerView').classList.remove('active');
+    document.getElementById('gamesView').classList.add('active');
+    document.getElementById('backHomeBtn').style.display = 'none';
+    document.getElementById('searchInput').value = '';
+
+    const container = document.getElementById('gameFrameContainer');
+    const gameFrame = document.getElementById('gameFrame');
+    if (gameFrame && container.contains(gameFrame)) {
+        container.removeChild(gameFrame);
+    }
+    if (container) container.innerHTML = '<div class="loading" id="loading"><div class="spinner"></div><p>Loading game...</p></div>';
+
+    const url = new URL(window.location);
+    url.searchParams.delete('id');
+    history.pushState(null, '', url.toString());
+
+    initializeCarousel();
+}
+
+window.addEventListener('message', function(event) {
+    const gameFrame = document.getElementById('gameFrame');
+    if (gameFrame && event.source === gameFrame.contentWindow) {
+        if (event.data === 'back-to-games') {
+            showGamesView();
+        }
+    }
+});
+
+function openGame(gameId) {
+    currentGame = allGames.find(game => game.id == gameId);
+
+    if (currentGame) {
+        document.getElementById('gamesView').classList.remove('active');
+        document.getElementById('gridView').classList.remove('active');
+        document.getElementById('gamePlayerView').classList.add('active');
+        document.getElementById('backHomeBtn').style.display = 'inline-flex';
+
+        const url = new URL(window.location);
+        url.searchParams.set('id', gameId);
+        history.pushState(null, '', url.toString());
+
+        displayGame(currentGame);
+    }
+}
+
+function displayGame(game) {
+    document.title = `${game.name} - Rosin`;
+
+    document.getElementById('gameTitle').innerHTML = `
+        <i data-lucide="${getCategoryIcon(game.category)}" width="22" height="22"></i>
+        <span>${game.name}</span>
+    `;
+
+    document.getElementById('gameMeta').innerHTML = `
+        <div class="meta-item">
+            <i data-lucide="tag" width="13" height="13"></i>
+            <span>${game.category}</span>
+        </div>
+        <div class="meta-item">
+            <i data-lucide="user" width="13" height="13"></i>
+            <span>${game.creator}</span>
+        </div>
+        <div class="meta-item">
+            <i data-lucide="info" width="13" height="13"></i>
+            <span>${game.description}</span>
+        </div>
+    `;
+
+    launchGame(game.id);
+    lucide.createIcons();
+}
+
+async function launchGame(gameId) {
+    const container = document.getElementById('gameFrameContainer');
+    const loading = document.getElementById('loading');
+
+    try {
+        const url = `https://cdn.jsdelivr.net/gh/rosinxsosa/rosin@main/games/${gameId}.html?t=${Date.now()}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        let html = await response.text();
+
+        let gameFrame = document.getElementById('gameFrame');
+        if (gameFrame === null) {
+            gameFrame = document.createElement('iframe');
+            gameFrame.id = 'gameFrame';
+            gameFrame.className = 'game-frame';
+            container.appendChild(gameFrame);
+        }
+
+        loading.style.display = 'none';
+
+        gameFrame.contentDocument.open();
+        gameFrame.contentDocument.write(html);
+        gameFrame.contentDocument.close();
+
+    } catch (error) {
+        console.error('Error loading game:', error);
+        loading.style.display = 'none';
+
+        let gameFrame = document.getElementById('gameFrame');
+        if (gameFrame === null) {
+            gameFrame = document.createElement('iframe');
+            gameFrame.id = 'gameFrame';
+            gameFrame.className = 'game-frame';
+            container.appendChild(gameFrame);
+        }
+
+        gameFrame.contentDocument.open();
+        gameFrame.contentDocument.write(`
+            <html>
+                <head><title>Error</title></head>
+                <body style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial,sans-serif;background:#1a1a1a;color:#fff;">
+                    <div style="text-align:center;">
+                        <h2>Failed to load game</h2>
+                        <p>${error}</p>
+                    </div>
+                </body>
+            </html>
+        `);
+        gameFrame.contentDocument.close();
+    }
+}
+
+function getCategoryIcon(category) {
+    return categoryIcons[category] || 'gamepad-2';
+}
+
+function closeGame() {
+    const gameFrame = document.getElementById('gameFrame');
+    const container = document.getElementById('gameFrameContainer');
+
+    if (gameFrame && container.contains(gameFrame)) {
+        container.removeChild(gameFrame);
+    }
+
+    container.innerHTML = '<div class="loading" id="loading"><div class="spinner"></div><p>Loading game...</p></div>';
+
+    showGamesView();
+}
+
+function toggleFullscreen() {
+    const gameFrame = document.getElementById('gameFrame');
+
+    if (!document.fullscreenElement) {
+        if (gameFrame && gameFrame.requestFullscreen) {
+            gameFrame.requestFullscreen().catch(err => {
+                console.error('Error attempting to enable fullscreen:', err);
+            });
+        } else {
+            console.error('Fullscreen not supported or iframe not found');
+        }
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+async function openInNewTab() {
+    if (currentGame && currentGame.id) {
+        try {
+            const newWindow = window.open("about:blank", "_blank");
+            const url = `https://cdn.jsdelivr.net/gh/rosinxsosa/rosin@main/games/${currentGame.id}.html?t=${Date.now()}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            let html = await response.text();
+
+            if (newWindow) {
+                newWindow.document.open();
+                newWindow.document.write(html);
+                newWindow.document.close();
+            }
+        } catch (error) {
+            alert('Failed to open game in new tab: ' + error);
+        }
+    }
+}
+
+function handleSearch(query) {
+    const searchTerm = query.toLowerCase().trim();
+    const searchResults = document.getElementById('searchResults');
+
+    if (searchTerm === '') {
+        searchResults.classList.remove('active');
+        searchResults.innerHTML = '';
+        return;
+    }
+
+    const filteredGames = allGames.filter(game =>
+        game.name.toLowerCase().includes(searchTerm) ||
+        game.category.toLowerCase().includes(searchTerm) ||
+        game.description.toLowerCase().includes(searchTerm)
+    );
+
+    if (filteredGames.length === 0) {
+        searchResults.innerHTML = `
+            <div class="search-no-results">
+                <i data-lucide="search-x" width="32" height="32"></i>
+                <p style="margin-top: 10px;">No games found</p>
+            </div>
+        `;
+        searchResults.classList.add('active');
+        lucide.createIcons();
+        return;
+    }
+
+    const maxResults = 50;
+    const displayGames = filteredGames.slice(0, maxResults);
+    const hasMore = filteredGames.length > maxResults;
+
+    searchResults.innerHTML = `
+        <div class="search-results-header">
+            Found ${filteredGames.length} game${filteredGames.length !== 1 ? 's' : ''}${hasMore ? ` (showing first ${maxResults})` : ''}
+        </div>
+        ${displayGames.map(game => `
+            <div class="search-result-item" onclick="openGame(${game.id}); closeSearch();">
+                <img src="${game.image}" alt="${game.name}" class="search-result-image" onerror="this.src='https://via.placeholder.com/80x60/667eea/ffffff?text=Game'">
+                <div class="search-result-info">
+                    <div class="search-result-name">${game.name}</div>
+                    <div class="search-result-category">
+                        <i data-lucide="${categoryIcons[game.category] || 'gamepad-2'}" width="12" height="12"></i>
+                        <span>${game.category}</span>
+                    </div>
+                </div>
+                <i data-lucide="play-circle" width="18" height="18" style="opacity: 0.5;"></i>
+            </div>
+        `).join('')}
+    `;
+
+    searchResults.classList.add('active');
+    lucide.createIcons();
+}
+
+function closeSearch() {
+    const searchResults = document.getElementById('searchResults');
+    const searchInput = document.getElementById('searchInput');
+    searchResults.classList.remove('active');
+    searchInput.value = '';
+}
+
+function getRandomGame() {
+    if (allGames.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * allGames.length);
+    return allGames[randomIndex];
+}
+
+function updateRandomGamePreview() {
+    currentRandomGame = getRandomGame();
+    if (currentRandomGame) {
+        const previewImg = document.getElementById('randomGamePreview');
+        previewImg.src = currentRandomGame.image;
+    }
+}
+
+function openRandomGame() {
+    if (currentRandomGame) {
+        openGame(currentRandomGame.id);
+    }
+}
+
+function startRandomGameRotation() {
+    updateRandomGamePreview();
+    randomGameInterval = setInterval(updateRandomGamePreview, 3000);
+}
+
+document.addEventListener('click', function(event) {
+    const searchContainer = document.querySelector('.search-container');
+    const searchResults = document.getElementById('searchResults');
+
+    if (searchContainer && !searchContainer.contains(event.target)) {
+        searchResults.classList.remove('active');
+    }
+});
+
+lucide.createIcons();
 </script>
 </body>
 </html>
